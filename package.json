@@ -1,0 +1,17 @@
+{
+  "name": "absensi-guru-bk",
+  "version": "1.0.0",
+  "description": "Dashboard Absensi Siswa Bulanan & Buku Register BK Madrasah / Sekolah",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:portable": "electron-builder --win portable",
+    "build:installer": "electron-builder --win nsis"
+  },
+  "author": "Guru BK Madrasah / Sekolah",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^26.18.0"
+  }
+}

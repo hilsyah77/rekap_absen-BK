@@ -3845,6 +3845,9 @@
     };
 
     class AttendanceRepository {
+      static isServerConnected = false;
+      static _serverSyncTimer = null;
+
       static async init() {
         // 1. If running in Electron Desktop App, load from permanent AppData file
         if (window.desktopAPI && window.desktopAPI.loadDatabase) {
@@ -3862,7 +3865,31 @@
           }
         }
 
-        // 2. Otherwise load or initialize in LocalStorage
+        // 2. If running on Web / VPS Server (HTTP/HTTPS), load from backend API (/api/database)
+        if (typeof window !== 'undefined' && window.location && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+          try {
+            const resp = await fetch('/api/database', { cache: 'no-store' });
+            if (resp.ok) {
+              const payload = await resp.json();
+              this.isServerConnected = true;
+              if (payload && payload.exists && payload.data && typeof payload.data === 'object') {
+                this.applyFullData(payload.data);
+                return;
+              } else {
+                // Server database masih kosong: inisialisasi lalu simpan ke server
+                if (!localStorage.getItem(STORAGE_KEYS.INIT_FLAG)) {
+                  this.resetToDefaults();
+                }
+                await this.syncToServerNow();
+                return;
+              }
+            }
+          } catch (e) {
+            console.warn('Backend API /api/database tidak tersedia, memakai penyimpanan browser lokal:', e);
+          }
+        }
+
+        // 3. Fallback: load or initialize in LocalStorage
         if (!localStorage.getItem(STORAGE_KEYS.INIT_FLAG)) {
           this.resetToDefaults();
         }
@@ -4013,6 +4040,36 @@
             console.warn('Sync to desktop failed:', err);
           });
         }
+        if (this.isServerConnected) {
+          this.syncToServer();
+        }
+      }
+
+      static syncToServer() {
+        if (this._serverSyncTimer) clearTimeout(this._serverSyncTimer);
+        this._serverSyncTimer = setTimeout(() => {
+          this.syncToServerNow();
+        }, 200);
+      }
+
+      static async syncToServerNow() {
+        if (!this.isServerConnected || typeof fetch !== 'function') return false;
+        try {
+          const dump = this.getFullDatabaseDump();
+          const resp = await fetch('/api/database', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dump)
+          });
+          if (!resp.ok) {
+            console.warn('Gagal menyimpan database ke server VPS:', resp.status);
+            return false;
+          }
+          return true;
+        } catch (err) {
+          console.warn('Koneksi ke server VPS terganggu saat menyimpan:', err);
+          return false;
+        }
       }
 
       static getAllStudents() {
@@ -4031,6 +4088,7 @@
 
       static saveAllStudents(students) {
         localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
+        this.syncToDesktop();
       }
 
       static deleteStudent(studentId) {
@@ -4610,6 +4668,16 @@
             document.getElementById('print-class-info').textContent = `Kelas: ${this.state.currentClass}`;
             window.print();
           });
+        } else if (AttendanceRepository.isServerConnected) {
+          const badgeEl = document.getElementById('badge-db-indicator');
+          if (badgeEl) {
+            badgeEl.textContent = 'Server VPS';
+            badgeEl.className = 'ml-1 px-1.5 py-0.2 rounded-full bg-emerald-200 text-emerald-900 text-[10px] font-extrabold';
+          }
+          const engineLabel = document.getElementById('db-storage-engine-label');
+          if (engineLabel) engineLabel.textContent = 'Database Server VPS (Sinkronisasi Otomatis)';
+          const pathDetail = document.getElementById('db-storage-path-detail');
+          if (pathDetail) pathDetail.textContent = 'Data tersimpan permanen di server (data/database.json) & sinkron ke semua perangkat.';
         }
       },
 

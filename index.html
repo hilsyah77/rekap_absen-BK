@@ -4906,7 +4906,8 @@
         }
         const customLogo = profile && (profile.logoUrl || profile.logoBase64);
         if (logoEl && customLogo && (!profile.logoType || profile.logoType === 'custom')) {
-          logoEl.innerHTML = `<img src="${customLogo}" alt="Logo" class="w-full h-full object-contain p-1 bg-white rounded-xl">`;
+          logoEl.className = 'w-16 h-16 mx-auto flex items-center justify-center mb-3 overflow-hidden';
+          logoEl.innerHTML = `<img src="${customLogo}" alt="Logo" class="w-full h-full object-contain drop-shadow-md">`;
         }
 
         // Isi dropdown kelas untuk tab Wali Kelas
@@ -5737,8 +5738,8 @@
       getLogoHTML(profile, containerClass = 'w-12 h-12', imgClass = 'w-full h-full object-contain') {
         const p = profile || this.state.schoolProfile || DEFAULT_SCHOOL_PROFILE;
         if (p.logoType === 'custom' && p.logoUrl) {
-          return `<div class="${containerClass} rounded-xl bg-white p-1 border border-slate-200/80 shadow-xs flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img src="${p.logoUrl}" alt="Logo Sekolah" class="${imgClass}">
+          return `<div class="${containerClass} flex items-center justify-center overflow-hidden flex-shrink-0">
+            <img src="${p.logoUrl}" alt="Logo Sekolah" class="${imgClass} drop-shadow-xs">
           </div>`;
         }
         if (p.logoType === 'preset' && p.presetKey && PRESET_LOGOS[p.presetKey]) {
@@ -5780,7 +5781,13 @@
 
         const logoContainer = document.getElementById('header-logo-container');
         if (logoContainer) {
-          logoContainer.innerHTML = this.getLogoHTML(p, 'w-12 h-12', 'w-full h-full object-contain');
+          if (p.logoType === 'custom' && p.logoUrl) {
+            logoContainer.className = 'w-10 h-10 flex items-center justify-center flex-shrink-0 overflow-hidden';
+            logoContainer.innerHTML = this.getLogoHTML(p, 'w-10 h-10', 'w-full h-full object-contain');
+          } else {
+            logoContainer.className = 'w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-900/50 flex-shrink-0 overflow-hidden';
+            logoContainer.innerHTML = this.getLogoHTML(p, 'w-9 h-9', 'w-full h-full object-contain');
+          }
         }
 
         const counselorNameEl = document.getElementById('header-counselor-name');

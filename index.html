@@ -3872,8 +3872,12 @@
             if (resp.ok) {
               const payload = await resp.json();
               this.isServerConnected = true;
-              if (payload && payload.exists && payload.data && typeof payload.data === 'object') {
-                this.applyFullData(payload.data);
+              const serverData = (payload && payload.data && typeof payload.data === 'object')
+                ? payload.data
+                : (payload && payload.version && typeof payload === 'object' ? payload : null);
+
+              if (serverData) {
+                this.applyFullData(serverData);
                 return;
               } else {
                 // Server database masih kosong: inisialisasi lalu simpan ke server

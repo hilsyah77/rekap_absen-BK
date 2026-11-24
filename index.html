@@ -4053,17 +4053,18 @@
         if (this._serverSyncTimer) clearTimeout(this._serverSyncTimer);
         this._serverSyncTimer = setTimeout(() => {
           this.syncToServerNow();
-        }, 200);
+        }, 50);
       }
 
       static async syncToServerNow() {
         if (!this.isServerConnected || typeof fetch !== 'function') return false;
         try {
           const dump = this.getFullDatabaseDump();
-          const resp = await fetch('/api/database', {
+          const resp = await fetch('/api/database/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dump)
+            body: JSON.stringify(dump),
+            keepalive: true
           });
           if (!resp.ok) {
             console.warn('Gagal menyimpan database ke server VPS:', resp.status);
@@ -4898,11 +4899,12 @@
         const profile = this.state.schoolProfile || AttendanceRepository.getSchoolProfile();
         const nameEl = document.getElementById('login-school-name');
         const logoEl = document.getElementById('login-school-logo');
-        if (nameEl && profile && profile.name) {
-          nameEl.textContent = profile.name;
+        if (nameEl && profile && (profile.schoolName || profile.name)) {
+          nameEl.textContent = profile.schoolName || profile.name;
         }
-        if (logoEl && profile && profile.logoBase64) {
-          logoEl.innerHTML = `<img src="${profile.logoBase64}" alt="Logo" class="w-full h-full object-contain p-1 bg-white rounded-xl">`;
+        const customLogo = profile && (profile.logoUrl || profile.logoBase64);
+        if (logoEl && customLogo && (!profile.logoType || profile.logoType === 'custom')) {
+          logoEl.innerHTML = `<img src="${customLogo}" alt="Logo" class="w-full h-full object-contain p-1 bg-white rounded-xl">`;
         }
 
         // Isi dropdown kelas untuk tab Wali Kelas

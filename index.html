@@ -866,8 +866,14 @@
             </div>
           </div>
 
-          <!-- Right: Mode Layar Penuh Toggle + Live Clock -->
-          <div class="flex items-center space-x-3 sm:space-x-4">
+          <!-- Right: VPS Sync Status + Mode Layar Penuh Toggle + Live Clock -->
+          <div class="flex items-center space-x-2 sm:space-x-3">
+            <!-- Indikator & Tombol Sinkronisasi Database VPS -->
+            <button type="button" onclick="App.refreshFromVPS()" id="btn-vps-sync-status" class="hidden inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 shadow-2xs transition-colors cursor-pointer" title="Status Sinkronisasi Database VPS (Klik untuk muat ulang data terbaru dari server)">
+              <span id="vps-sync-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span id="vps-sync-label">Tersinkron VPS</span>
+            </button>
+
             <!-- Tombol Layar Penuh Input Absen -->
             <button type="button" onclick="App.toggleFullPageTable()" id="btn-toggle-fullscreen" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border border-indigo-200 bg-indigo-50/70 text-indigo-700 hover:bg-indigo-100 shadow-2xs transition-colors cursor-pointer" title="Maksimalkan layar untuk input absensi siswa">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
@@ -3848,6 +3854,59 @@
       static isServerConnected = false;
       static _serverSyncTimer = null;
 
+      static isWebServerMode() {
+        return typeof window !== 'undefined' && window.location && (window.location.protocol === 'http:' || window.location.protocol === 'https:');
+      }
+
+      static updateSyncStatusUI(status, message) {
+        const btn = document.getElementById('btn-vps-sync-status');
+        const dot = document.getElementById('vps-sync-dot');
+        const label = document.getElementById('vps-sync-label');
+        if (!btn || !dot || !label) return;
+        if (!this.isWebServerMode()) return;
+
+        btn.classList.remove('hidden');
+        if (status === 'saving') {
+          btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold rounded-xl border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 shadow-2xs transition-colors cursor-pointer';
+          dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+          label.textContent = message || 'Menyimpan ke VPS...';
+        } else if (status === 'error') {
+          btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold rounded-xl border border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100 shadow-2xs transition-colors cursor-pointer';
+          dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+          label.textContent = message || 'Gagal Sync VPS';
+        } else {
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          const ss = String(now.getSeconds()).padStart(2, '0');
+          btn.className = 'inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 shadow-2xs transition-colors cursor-pointer';
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+          label.textContent = message || `Tersinkron VPS (${hh}:${mm}:${ss})`;
+        }
+      }
+
+      static async pullFromServer() {
+        if (!this.isWebServerMode() || typeof fetch !== 'function') return false;
+        try {
+          const resp = await fetch(`/api/database?t=${Date.now()}`, { cache: 'no-store' });
+          if (!resp.ok) return false;
+          const payload = await resp.json();
+          this.isServerConnected = true;
+          const serverData = (payload && payload.data && typeof payload.data === 'object')
+            ? payload.data
+            : (payload && payload.version && typeof payload === 'object' ? payload : null);
+          if (serverData) {
+            this.applyFullData(serverData);
+            this.updateSyncStatusUI('ok');
+            return true;
+          }
+          return false;
+        } catch (e) {
+          console.warn('Gagal menarik data terbaru dari VPS:', e);
+          return false;
+        }
+      }
+
       static async init() {
         // 1. If running in Electron Desktop App, load from permanent AppData file
         if (window.desktopAPI && window.desktopAPI.loadDatabase) {
@@ -3866,9 +3925,9 @@
         }
 
         // 2. If running on Web / VPS Server (HTTP/HTTPS), load from backend API (/api/database)
-        if (typeof window !== 'undefined' && window.location && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+        if (this.isWebServerMode()) {
           try {
-            const resp = await fetch('/api/database', { cache: 'no-store' });
+            const resp = await fetch(`/api/database?t=${Date.now()}`, { cache: 'no-store' });
             if (resp.ok) {
               const payload = await resp.json();
               this.isServerConnected = true;
@@ -3878,6 +3937,7 @@
 
               if (serverData) {
                 this.applyFullData(serverData);
+                this.updateSyncStatusUI('ok');
                 return;
               } else {
                 // Server database masih kosong: inisialisasi lalu simpan ke server
@@ -4044,7 +4104,7 @@
             console.warn('Sync to desktop failed:', err);
           });
         }
-        if (this.isServerConnected) {
+        if (this.isServerConnected || this.isWebServerMode()) {
           this.syncToServer();
         }
       }
@@ -4057,8 +4117,13 @@
       }
 
       static async syncToServerNow() {
-        if (!this.isServerConnected || typeof fetch !== 'function') return false;
+        if ((!this.isServerConnected && !this.isWebServerMode()) || typeof fetch !== 'function') return false;
+        // Wali Kelas bersifat read-only: jangan pernah menimpa database server VPS
+        if (typeof App !== 'undefined' && App.state && App.state.userRole === 'walikelas') {
+          return false;
+        }
         try {
+          this.updateSyncStatusUI('saving');
           const dump = this.getFullDatabaseDump();
           const resp = await fetch('/api/database/sync', {
             method: 'POST',
@@ -4067,14 +4132,18 @@
           });
           if (!resp.ok) {
             console.warn('Gagal menyimpan database ke server VPS:', resp.status);
+            this.updateSyncStatusUI('error', `Gagal Sync (${resp.status})`);
             if (typeof App !== 'undefined' && App.showToast) {
-              App.showToast(`Gagal sinkron ke VPS (HTTP ${resp.status}). Coba kompres logo atau muat ulang.`, 'error');
+              App.showToast(`Gagal sinkron ke VPS (HTTP ${resp.status}). Coba muat ulang halaman.`, 'error');
             }
             return false;
           }
+          this.isServerConnected = true;
+          this.updateSyncStatusUI('ok');
           return true;
         } catch (err) {
           console.warn('Koneksi ke server VPS terganggu saat menyimpan:', err);
+          this.updateSyncStatusUI('error', 'Koneksi VPS Terputus');
           return false;
         }
       }
@@ -4117,11 +4186,6 @@
           list[idx] = { ...list[idx], ...updatedData };
           this.saveAllStudents(list);
         }
-      }
-
-      static saveAllStudents(students) {
-        localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(students));
-        this.syncToDesktop();
       }
 
       static getWorkSettings() {
@@ -4979,7 +5043,34 @@
         }
       },
 
-      submitLoginAdmin() {
+      async refreshFromVPS() {
+        const ok = await AttendanceRepository.pullFromServer();
+        if (!ok) {
+          this.showToast('Gagal mengambil data terbaru dari server VPS.', 'error');
+          return;
+        }
+        const auth = AttendanceRepository.getAuthSession();
+        this.state.adminPin = auth.adminPin;
+        this.state.walikelasPassword = auth.walikelasPassword;
+        this.state.requireLogin = auth.requireLogin;
+        this.state.workSettings = AttendanceRepository.getWorkSettings();
+        this.state.schoolProfile = AttendanceRepository.getSchoolProfile();
+        this.state.mutations = AttendanceRepository.getMutations();
+        this.populateClassDropdown();
+        this.applySchoolProfileUI();
+        this.applyWorkSettingsUI();
+        this.updateMutationsBadge();
+        this.updateWaliKelasBadge();
+        this.updatePrintWaliKelasSignature();
+        this.loadCurrentState();
+        this.showToast('Data terbaru berhasil disinkronkan dari Server VPS!', 'success');
+      },
+
+      async submitLoginAdmin() {
+        await AttendanceRepository.pullFromServer();
+        const auth = AttendanceRepository.getAuthSession();
+        this.state.adminPin = auth.adminPin;
+
         const passEl = document.getElementById('login-admin-password');
         const errEl = document.getElementById('login-admin-error');
         const entered = passEl ? passEl.value.trim() : '';
@@ -4998,16 +5089,27 @@
         this.state.userRole = 'admin';
         this.state.walikelasName = '';
         this.state.walikelasClass = '';
+        this.state.workSettings = AttendanceRepository.getWorkSettings();
+        this.state.schoolProfile = AttendanceRepository.getSchoolProfile();
+        this.state.mutations = AttendanceRepository.getMutations();
         AttendanceRepository.setAuthSession('admin', '', '');
         sessionStorage.setItem('BK_APP_SESSION_AUTH_OK', '1');
 
+        this.populateClassDropdown();
+        this.applySchoolProfileUI();
+        this.applyWorkSettingsUI();
         this.applyRoleUI();
+        this.updateMutationsBadge();
+        this.updateWaliKelasBadge();
+        this.updatePrintWaliKelasSignature();
         this.loadCurrentState();
         this.hideLoginScreen();
         this.showToast('Selamat datang! Masuk sebagai Guru BK (Admin).', 'success');
       },
 
-      submitLoginWaliKelas() {
+      async submitLoginWaliKelas() {
+        await AttendanceRepository.pullFromServer();
+
         const selectCls = document.getElementById('login-walikelas-class');
         const inputName = document.getElementById('login-walikelas-name');
         const passEl = document.getElementById('login-walikelas-password');
@@ -5027,19 +5129,28 @@
         }
 
         if (errEl) errEl.classList.add('hidden');
+        const wkInfo = targetClass ? AttendanceRepository.getWaliKelasForClass(targetClass) : {};
+        const finalWkName = name || (wkInfo && wkInfo.name) || '';
         this.state.userRole = 'walikelas';
-        this.state.walikelasName = name;
+        this.state.walikelasName = finalWkName;
         this.state.walikelasClass = targetClass;
+        this.state.workSettings = AttendanceRepository.getWorkSettings();
+        this.state.schoolProfile = AttendanceRepository.getSchoolProfile();
+        this.state.mutations = AttendanceRepository.getMutations();
+        this.populateClassDropdown();
         if (targetClass) {
           this.state.currentClass = targetClass;
           const mainSelect = document.getElementById('select-class');
           if (mainSelect) mainSelect.value = targetClass;
         }
 
-        AttendanceRepository.setAuthSession('walikelas', name, targetClass);
+        AttendanceRepository.setAuthSession('walikelas', finalWkName, targetClass);
         sessionStorage.setItem('BK_APP_SESSION_AUTH_OK', '1');
 
+        this.applySchoolProfileUI();
+        this.applyWorkSettingsUI();
         this.applyRoleUI();
+        this.updatePrintWaliKelasSignature();
         this.loadCurrentState();
         this.hideLoginScreen();
         this.showToast(`Selamat datang! Masuk sebagai Wali Kelas${targetClass ? ' ' + targetClass : ''}.`, 'info');
@@ -7930,7 +8041,7 @@
         }
       },
 
-      saveWaliKelasSettings() {
+      async saveWaliKelasSettings() {
         const tbody = document.getElementById('tbody-walikelas-list');
         if (!tbody) return;
 
@@ -7955,7 +8066,17 @@
         this.updateWaliKelasBadge();
         this.updatePrintWaliKelasSignature();
         this.closeWaliKelasSettingsModal();
-        this.showToast('Pengaturan Wali Kelas berhasil disimpan!', 'success');
+
+        if (AttendanceRepository.isWebServerMode()) {
+          const synced = await AttendanceRepository.syncToServerNow();
+          if (synced) {
+            this.showToast('Pengaturan Wali Kelas berhasil disimpan ke Database VPS!', 'success');
+          } else {
+            this.showToast('Tersimpan di browser lokal, tetapi gagal sinkron ke VPS!', 'error');
+          }
+        } else {
+          this.showToast('Pengaturan Wali Kelas berhasil disimpan!', 'success');
+        }
       },
 
       resetAllWaliKelas() {

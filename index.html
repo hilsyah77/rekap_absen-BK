@@ -4063,11 +4063,13 @@
           const resp = await fetch('/api/database/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dump),
-            keepalive: true
+            body: JSON.stringify(dump)
           });
           if (!resp.ok) {
             console.warn('Gagal menyimpan database ke server VPS:', resp.status);
+            if (typeof App !== 'undefined' && App.showToast) {
+              App.showToast(`Gagal sinkron ke VPS (HTTP ${resp.status}). Coba kompres logo atau muat ulang.`, 'error');
+            }
             return false;
           }
           return true;
@@ -7740,12 +7742,6 @@
         }
 
         const cityVal = document.getElementById('input-school-city').value.trim();
-        if (!cityVal) {
-          this.showToast('Kota / Kabupaten tidak boleh kosong!', 'error');
-          this.switchSchoolSettingsTab('identity');
-          document.getElementById('input-school-city').focus();
-          return;
-        }
 
         const kopRadios = document.getElementsByName('kopBorder');
         let selectedBorder = 'double';

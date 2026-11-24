@@ -550,6 +550,94 @@
     <p class="text-[9px] text-slate-600 font-semibold">Buku Register Bimbingan &amp; Konseling (BK) • Format Kertas F4 / Folio (330 &times; 215 mm) Landscape</p>
   </div>
 
+  <!-- ================= HALAMAN LOGIN (FULL-SCREEN OVERLAY) ================= -->
+  <div id="login-screen" class="no-print fixed inset-0 z-[100] bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center p-4 overflow-y-auto hidden">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200/20 overflow-hidden my-auto">
+      <!-- Header Branding -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 px-6 py-6 text-center text-white relative">
+        <div id="login-school-logo" class="w-14 h-14 mx-auto rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center text-white shadow-lg mb-3 overflow-hidden">
+          <svg class="w-7 h-7 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h2 id="login-school-name" class="text-base font-extrabold tracking-tight text-white">Portal Absensi &amp; Buku Register BK</h2>
+        <p class="text-xs text-indigo-200 mt-0.5">Silakan masuk menggunakan password akun Anda</p>
+      </div>
+
+      <!-- Role Selector Tabs -->
+      <div class="px-6 pt-5">
+        <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+          <button type="button" id="login-tab-admin" onclick="App.switchLoginTab('admin')" class="py-2 px-3 rounded-xl text-xs font-extrabold transition-all bg-indigo-600 text-white shadow-xs cursor-pointer">
+            Guru BK / Admin
+          </button>
+          <button type="button" id="login-tab-walikelas" onclick="App.switchLoginTab('walikelas')" class="py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+            Wali Kelas
+          </button>
+        </div>
+      </div>
+
+      <!-- Login Body -->
+      <div class="p-6">
+        <!-- Form 1: Admin / Guru BK -->
+        <form id="login-form-admin" onsubmit="event.preventDefault(); App.submitLoginAdmin();" class="space-y-4">
+          <div class="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-900">
+            <strong>Mode Guru BK (Admin):</strong> Akses penuh input absensi, kelola siswa, mutasi, pengaturan, dan database.
+          </div>
+          <div>
+            <label for="login-admin-password" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Password Admin / Guru BK</label>
+            <div class="relative">
+              <input type="password" id="login-admin-password" autocomplete="current-password" placeholder="Masukkan password Admin..." class="w-full text-sm bg-slate-50 focus:bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 pr-10 outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+              <button type="button" onclick="App.togglePasswordInput('login-admin-password')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer" title="Tampilkan / Sembunyikan Password">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              </button>
+            </div>
+            <p id="login-admin-error" class="hidden mt-1.5 text-xs font-semibold text-rose-600"></p>
+          </div>
+          <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+            <span>Masuk sebagai Guru BK</span>
+          </button>
+        </form>
+
+        <!-- Form 2: Wali Kelas -->
+        <form id="login-form-walikelas" onsubmit="event.preventDefault(); App.submitLoginWaliKelas();" class="space-y-3.5 hidden">
+          <div class="p-3 rounded-2xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900">
+            <strong>Mode Wali Kelas:</strong> Khusus melihat &amp; mengunduh rekap presensi bulanan maupun 1 tahun penuh.
+          </div>
+          <div>
+            <label for="login-walikelas-class" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Kelas yang Diampu</label>
+            <select id="login-walikelas-class" class="w-full text-xs bg-slate-50 focus:bg-white border border-slate-300 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-semibold cursor-pointer">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div>
+            <label for="login-walikelas-name" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Nama Wali Kelas (Opsional)</label>
+            <input type="text" id="login-walikelas-name" placeholder="Otomatis terisi atau ketik nama Anda" class="w-full text-xs bg-slate-50 focus:bg-white border border-slate-300 rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label for="login-walikelas-password" class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Password Wali Kelas</label>
+            <div class="relative">
+              <input type="password" id="login-walikelas-password" autocomplete="current-password" placeholder="Masukkan password Wali Kelas..." class="w-full text-sm bg-slate-50 focus:bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 pr-10 outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+              <button type="button" onclick="App.togglePasswordInput('login-walikelas-password')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer" title="Tampilkan / Sembunyikan Password">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              </button>
+            </div>
+            <p id="login-walikelas-error" class="hidden mt-1.5 text-xs font-semibold text-rose-600"></p>
+          </div>
+          <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition-colors flex items-center justify-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+            <span>Masuk sebagai Wali Kelas</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-3 bg-slate-50 border-t border-slate-200 text-center">
+        <p class="text-[11px] text-slate-500">Pengaturan password dapat diubah melalui menu <strong>Pengaturan Password</strong> (Admin).</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= APP LAYOUT: SIDEBAR (KIRI) & MAIN CONTENT (KANAN) ================= -->
   <div id="app-layout-wrapper" class="flex-1 flex flex-row min-h-screen w-full relative">
 
@@ -718,6 +806,15 @@
             </div>
             <span id="badge-walikelas-count" class="sidebar-text px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800/60 text-[9px] font-bold">Wali</span>
           </button>
+
+          <!-- Pengaturan Password Login -->
+          <button type="button" id="btn-open-password-settings" onclick="App.openPasswordSettingsModal()" class="role-admin-only w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer" title="Atur Password Login Admin (Guru BK) & Wali Kelas">
+            <div class="flex items-center gap-2.5 truncate">
+              <svg class="w-4 h-4 flex-shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              <span class="sidebar-text truncate">Pengaturan Password</span>
+            </div>
+            <span class="sidebar-text px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800/60 text-[9px] font-bold">Login</span>
+          </button>
         </div>
 
       </div>
@@ -740,6 +837,11 @@
             <span class="text-slate-300 text-xs font-semibold sidebar-text truncate" id="role-status-name">Akses Penuh</span>
           </div>
           <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" /></svg>
+        </button>
+
+        <button type="button" id="btn-logout-app" onclick="App.logoutToLoginScreen()" class="w-full flex items-center justify-center gap-2 px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 text-rose-200 hover:text-white text-xs font-bold transition-colors cursor-pointer" title="Keluar ke Halaman Login">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          <span class="sidebar-text truncate">Keluar / Login</span>
         </button>
       </div>
     </aside>
@@ -3208,6 +3310,15 @@
                   <!-- Dynamically populated classes -->
                 </select>
               </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Password Wali Kelas</label>
+                <div class="relative">
+                  <input type="password" id="input-walikelas-password" placeholder="Masukkan password Wali Kelas..." class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-blue-500">
+                  <button type="button" onclick="App.togglePasswordInput('input-walikelas-password')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                </div>
+              </div>
               <button type="button" onclick="App.loginAsWaliKelas()" class="w-full mt-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
                 <span>Beralih ke Mode Wali Kelas</span>
@@ -3229,16 +3340,16 @@
 
             <div class="mt-3.5 space-y-2.5">
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">PIN Pengaman Guru BK</label>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Password Guru BK (Admin)</label>
                 <div class="relative">
-                  <input type="password" id="input-admin-pin" placeholder="Masukkan PIN (Default: 123456)" maxlength="12" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-indigo-500">
+                  <input type="password" id="input-admin-pin" placeholder="Masukkan password Admin..." maxlength="32" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-indigo-500">
                   <button type="button" onclick="App.togglePinVisibility()" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
                     <svg id="icon-pin-eye" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   </button>
                 </div>
                 <div class="flex justify-between items-center mt-1">
-                  <span class="text-[10px] text-slate-400">PIN Bawaan: <strong>123456</strong></span>
-                  <button type="button" onclick="App.promptChangeAdminPin()" id="btn-change-pin-link" class="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer">Ganti PIN</button>
+                  <span class="text-[10px] text-slate-400">Password dapat diatur di menu Pengaturan Password</span>
+                  <button type="button" onclick="App.closeRoleModal(); App.openPasswordSettingsModal();" id="btn-change-pin-link" class="role-admin-only text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer">Pengaturan Password</button>
                 </div>
               </div>
               <button type="button" onclick="App.loginAsAdmin()" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer">
@@ -3250,8 +3361,146 @@
         </div>
 
         <!-- Footer -->
-        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end">
+        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+          <button type="button" onclick="App.closeRoleModal(); App.logoutToLoginScreen();" class="px-3.5 py-2 text-xs font-bold rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer">
+            Keluar ke Halaman Login
+          </button>
           <button type="button" onclick="App.closeRoleModal()" class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PENGATURAN PASSWORD LOGIN (ADMIN & WALI KELAS) -->
+  <div id="modal-password-settings" class="fixed inset-0 z-50 overflow-y-auto hidden" aria-labelledby="modal-password-settings-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity" onclick="App.closePasswordSettingsModal()"></div>
+    <div class="flex min-h-screen items-center justify-center p-3 sm:p-4 text-center">
+      <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all w-full max-w-2xl border border-slate-200 my-8">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-amber-800 via-slate-900 to-indigo-950 px-6 py-4 text-white flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-white tracking-wide" id="modal-password-settings-title">Pengaturan Password Login</h3>
+              <p class="text-xs text-amber-100">Kelola keamanan password Admin (Guru BK) &amp; Wali Kelas</p>
+            </div>
+          </div>
+          <button type="button" onclick="App.closePasswordSettingsModal()" class="text-white/80 hover:text-white rounded-xl p-1.5 hover:bg-white/10 transition-colors cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+          <!-- Opsi Wajib Login -->
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
+            <div>
+              <h4 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Tampilkan Halaman Login Otomatis</h4>
+              <p class="text-xs text-slate-500 mt-0.5">Jika aktif, pengguna harus memasukkan password saat pertama kali membuka aplikasi/tab baru.</p>
+            </div>
+            <label class="inline-flex items-center cursor-pointer flex-shrink-0">
+              <input type="checkbox" id="setting-require-login" onchange="App.saveRequireLoginSetting()" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+              <span class="ml-2 text-xs font-bold text-slate-700">Aktif</span>
+            </label>
+          </div>
+
+          <!-- Section 1: Password Admin (Guru BK) -->
+          <div class="p-4 rounded-2xl border border-indigo-200 bg-indigo-50/30 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-extrabold text-indigo-950 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center">BK</span>
+                <span>Password Admin (Guru BK)</span>
+              </h4>
+              <span class="text-[10px] font-semibold text-slate-500">Default awal: <code class="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono">123456</code></span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Password Saat Ini</label>
+                <input type="password" id="setting-admin-old-pass" placeholder="Password lama" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Password Baru</label>
+                <input type="password" id="setting-admin-new-pass" placeholder="Min. 4 karakter" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Ulangi Password Baru</label>
+                <input type="password" id="setting-admin-confirm-pass" placeholder="Konfirmasi password" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button type="button" onclick="App.saveAdminPasswordSetting()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer">
+                Simpan Password Admin
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 2: Password Wali Kelas -->
+          <div class="p-4 rounded-2xl border border-blue-200 bg-blue-50/30 space-y-4">
+            <div class="flex items-center justify-between">
+              <h4 class="text-sm font-extrabold text-blue-950 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">WK</span>
+                <span>Password Wali Kelas</span>
+              </h4>
+              <span class="text-[10px] font-semibold text-slate-500">Default awal: <code class="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono">walikelas123</code></span>
+            </div>
+
+            <!-- Password Default Wali Kelas -->
+            <div class="flex flex-col sm:flex-row sm:items-end gap-2.5 pb-3 border-b border-blue-200/70">
+              <div class="flex-1">
+                <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Password Default Semua Wali Kelas</label>
+                <div class="relative">
+                  <input type="password" id="setting-wk-default-pass" placeholder="Min. 4 karakter" class="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 outline-none focus:ring-2 focus:ring-blue-500">
+                  <button type="button" onclick="App.togglePasswordInput('setting-wk-default-pass')" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                  </button>
+                </div>
+              </div>
+              <button type="button" onclick="App.saveWaliKelasDefaultPassword()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer flex-shrink-0">
+                Simpan Password Default
+              </button>
+            </div>
+
+            <!-- Password Khusus Per Kelas -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <div>
+                  <h5 class="text-xs font-bold text-slate-800">Password Khusus Per Kelas (Opsional)</h5>
+                  <p class="text-[11px] text-slate-500">Kosongkan kolom password jika kelas tersebut menggunakan Password Default Wali Kelas.</p>
+                </div>
+              </div>
+              <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                <div class="max-h-52 overflow-y-auto">
+                  <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-100 sticky top-0 text-[10px] uppercase text-slate-600 font-bold border-b border-slate-200">
+                      <tr>
+                        <th class="py-2 px-3 w-28">Kelas</th>
+                        <th class="py-2 px-3">Nama Wali Kelas</th>
+                        <th class="py-2 px-3 w-48">Password Khusus</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbody-wk-passwords" class="divide-y divide-slate-100">
+                      <!-- Generated dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="flex justify-end mt-2.5">
+                <button type="button" onclick="App.saveAllWaliKelasPasswords()" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer">
+                  Simpan Password Per Kelas
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-3.5 bg-slate-50 border-t border-slate-200 flex items-center justify-end">
+          <button type="button" onclick="App.closePasswordSettingsModal()" class="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 transition-colors cursor-pointer">
             Tutup
           </button>
         </div>
@@ -3590,6 +3839,8 @@
       AUTH_WALIKELAS_NAME: 'BK_APP_AUTH_WALIKELAS_NAME_V5',
       AUTH_WALIKELAS_CLASS: 'BK_APP_AUTH_WALIKELAS_CLASS_V5',
       ADMIN_PIN: 'BK_APP_ADMIN_PIN_V5',
+      WALIKELAS_PASSWORD: 'BK_APP_WALIKELAS_PASSWORD_V5',
+      REQUIRE_LOGIN: 'BK_APP_REQUIRE_LOGIN_V5',
       WALIKELAS_MAP: 'BK_APP_WALIKELAS_MAP_V5'
     };
 
@@ -3687,6 +3938,11 @@
           exportedAt: new Date().toISOString(),
           schoolProfile: this.getSchoolProfile(),
           waliKelasMap: this.getWaliKelasMap(),
+          authConfig: {
+            adminPin: localStorage.getItem(STORAGE_KEYS.ADMIN_PIN) || '123456',
+            walikelasPassword: localStorage.getItem(STORAGE_KEYS.WALIKELAS_PASSWORD) || 'walikelas123',
+            requireLogin: this.getRequireLogin()
+          },
           workSettings: this.getWorkSettings(),
           classes: this.getClasses(),
           students: this.getAllStudents(),
@@ -3724,6 +3980,13 @@
         if (data.schoolProfile) localStorage.setItem(STORAGE_KEYS.SCHOOL_PROFILE, JSON.stringify(data.schoolProfile));
         if (data.waliKelasMap && typeof data.waliKelasMap === 'object') {
           localStorage.setItem(STORAGE_KEYS.WALIKELAS_MAP, JSON.stringify(data.waliKelasMap));
+        }
+        if (data.authConfig && typeof data.authConfig === 'object') {
+          if (data.authConfig.adminPin) localStorage.setItem(STORAGE_KEYS.ADMIN_PIN, String(data.authConfig.adminPin));
+          if (data.authConfig.walikelasPassword) localStorage.setItem(STORAGE_KEYS.WALIKELAS_PASSWORD, String(data.authConfig.walikelasPassword));
+          if (typeof data.authConfig.requireLogin === 'boolean') {
+            localStorage.setItem(STORAGE_KEYS.REQUIRE_LOGIN, data.authConfig.requireLogin ? 'true' : 'false');
+          }
         }
         if (Array.isArray(data.mutations)) localStorage.setItem(STORAGE_KEYS.MUTATIONS, JSON.stringify(data.mutations));
         if (data.notes) localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(data.notes));
@@ -3847,10 +4110,12 @@
       static setWaliKelasForClass(className, data) {
         if (!className) return;
         const map = this.getWaliKelasMap();
+        const existing = map[className] || {};
         map[className] = {
           name: (data && data.name) || '',
           nip: (data && data.nip) || '',
-          phone: (data && data.phone) || ''
+          phone: (data && data.phone) || '',
+          password: (data && typeof data.password === 'string') ? data.password : (existing.password || '')
         };
         this.saveWaliKelasMap(map);
       }
@@ -4090,7 +4355,9 @@
         const walikelasName = localStorage.getItem(STORAGE_KEYS.AUTH_WALIKELAS_NAME) || '';
         const walikelasClass = localStorage.getItem(STORAGE_KEYS.AUTH_WALIKELAS_CLASS) || '';
         const adminPin = localStorage.getItem(STORAGE_KEYS.ADMIN_PIN) || '123456';
-        return { role, walikelasName, walikelasClass, adminPin };
+        const walikelasPassword = localStorage.getItem(STORAGE_KEYS.WALIKELAS_PASSWORD) || 'walikelas123';
+        const requireLogin = this.getRequireLogin();
+        return { role, walikelasName, walikelasClass, adminPin, walikelasPassword, requireLogin };
       }
 
       static setAuthSession(role, walikelasName = '', walikelasClass = '') {
@@ -4102,7 +4369,44 @@
       static setAdminPin(newPin) {
         if (!newPin || newPin.trim().length < 4) return false;
         localStorage.setItem(STORAGE_KEYS.ADMIN_PIN, newPin.trim());
+        this.syncToDesktop();
         return true;
+      }
+
+      static getWaliKelasDefaultPassword() {
+        return localStorage.getItem(STORAGE_KEYS.WALIKELAS_PASSWORD) || 'walikelas123';
+      }
+
+      static setWaliKelasDefaultPassword(newPassword) {
+        if (!newPassword || newPassword.trim().length < 4) return false;
+        localStorage.setItem(STORAGE_KEYS.WALIKELAS_PASSWORD, newPassword.trim());
+        this.syncToDesktop();
+        return true;
+      }
+
+      static getExpectedWaliKelasPassword(className) {
+        if (className) {
+          const wkInfo = this.getWaliKelasForClass(className);
+          if (wkInfo && wkInfo.password && wkInfo.password.trim()) {
+            return wkInfo.password.trim();
+          }
+        }
+        return this.getWaliKelasDefaultPassword();
+      }
+
+      static verifyWaliKelasPassword(className, enteredPassword) {
+        const expected = this.getExpectedWaliKelasPassword(className);
+        return (enteredPassword || '').trim() === expected;
+      }
+
+      static getRequireLogin() {
+        const val = localStorage.getItem(STORAGE_KEYS.REQUIRE_LOGIN);
+        return val === null ? true : val === 'true';
+      }
+
+      static setRequireLogin(flag) {
+        localStorage.setItem(STORAGE_KEYS.REQUIRE_LOGIN, flag ? 'true' : 'false');
+        this.syncToDesktop();
       }
 
       // --- ANNUAL ATTENDANCE ENGINE (1 TAHUN PENUH / 12 BULAN) ---
@@ -4230,6 +4534,8 @@
         this.state.walikelasName = auth.walikelasName;
         this.state.walikelasClass = auth.walikelasClass;
         this.state.adminPin = auth.adminPin;
+        this.state.walikelasPassword = auth.walikelasPassword;
+        this.state.requireLogin = auth.requireLogin;
         this.state.annualRecapYear = this.state.currentYear;
 
         const availableClasses = AttendanceRepository.getClasses();
@@ -4262,6 +4568,11 @@
           if (sidebar) sidebar.classList.add('sidebar-collapsed');
         }
         this.loadCurrentState();
+
+        // Tampilkan Halaman Login jika pengaturan Wajib Login aktif dan belum login di sesi ini
+        if (this.state.requireLogin && sessionStorage.getItem('BK_APP_SESSION_AUTH_OK') !== '1') {
+          this.showLoginScreen();
+        }
       },
 
       setupDesktopBridge() {
@@ -4429,6 +4740,8 @@
 
         const inputPin = document.getElementById('input-admin-pin');
         if (inputPin) inputPin.value = '';
+        const inputWkPass = document.getElementById('input-walikelas-password');
+        if (inputWkPass) inputWkPass.value = '';
 
         this.applyRoleUI();
         modal.classList.remove('hidden');
@@ -4442,8 +4755,16 @@
       loginAsWaliKelas() {
         const inputName = document.getElementById('input-walikelas-name');
         const selectClass = document.getElementById('select-walikelas-class');
+        const inputPass = document.getElementById('input-walikelas-password');
         const name = inputName ? inputName.value.trim() : '';
         const targetClass = selectClass ? selectClass.value : '';
+        const enteredPass = inputPass ? inputPass.value.trim() : '';
+
+        if (!AttendanceRepository.verifyWaliKelasPassword(targetClass, enteredPass)) {
+          alert('Password Wali Kelas salah! Silakan masukkan password yang benar.');
+          if (inputPass) inputPass.focus();
+          return;
+        }
 
         this.state.userRole = 'walikelas';
         this.state.walikelasName = name;
@@ -4456,6 +4777,7 @@
         }
 
         AttendanceRepository.setAuthSession('walikelas', name, targetClass);
+        sessionStorage.setItem('BK_APP_SESSION_AUTH_OK', '1');
         this.applyRoleUI();
         this.loadCurrentState();
         this.closeRoleModal();
@@ -4468,7 +4790,7 @@
 
         const currentPin = this.state.adminPin || '123456';
         if (enteredPin !== currentPin) {
-          alert('PIN salah! Silakan masukkan PIN yang benar (Bawaan: 123456).');
+          alert('Password Admin salah! Silakan masukkan password yang benar.');
           if (inputPin) inputPin.focus();
           return;
         }
@@ -4478,6 +4800,7 @@
         this.state.walikelasClass = '';
 
         AttendanceRepository.setAuthSession('admin', '', '');
+        sessionStorage.setItem('BK_APP_SESSION_AUTH_OK', '1');
         this.applyRoleUI();
         this.loadCurrentState();
         this.closeRoleModal();
@@ -4485,9 +4808,316 @@
       },
 
       togglePinVisibility() {
-        const inputPin = document.getElementById('input-admin-pin');
-        if (!inputPin) return;
-        inputPin.type = inputPin.type === 'password' ? 'text' : 'password';
+        this.togglePasswordInput('input-admin-pin');
+      },
+
+      togglePasswordInput(inputId) {
+        const el = document.getElementById(inputId);
+        if (!el) return;
+        el.type = el.type === 'password' ? 'text' : 'password';
+      },
+
+      // --- FULL-SCREEN LOGIN PAGE CONTROLLER ---
+      showLoginScreen() {
+        const screen = document.getElementById('login-screen');
+        if (!screen) return;
+
+        // Sinkronisasi identitas sekolah pada halaman login
+        const profile = this.state.schoolProfile || AttendanceRepository.getSchoolProfile();
+        const nameEl = document.getElementById('login-school-name');
+        const logoEl = document.getElementById('login-school-logo');
+        if (nameEl && profile && profile.name) {
+          nameEl.textContent = profile.name;
+        }
+        if (logoEl && profile && profile.logoBase64) {
+          logoEl.innerHTML = `<img src="${profile.logoBase64}" alt="Logo" class="w-full h-full object-contain p-1 bg-white rounded-xl">`;
+        }
+
+        // Isi dropdown kelas untuk tab Wali Kelas
+        const classes = AttendanceRepository.getClasses();
+        const selectCls = document.getElementById('login-walikelas-class');
+        const inputWkName = document.getElementById('login-walikelas-name');
+        if (selectCls) {
+          let html = '<option value="">-- Semua Kelas (Bisa Pilih Kelas) --</option>';
+          classes.forEach(c => {
+            const displayLabel = c.trim().toLowerCase().startsWith('kelas ') ? c.trim() : `Kelas ${c.trim()}`;
+            html += `<option value="${c}">${displayLabel}</option>`;
+          });
+          selectCls.innerHTML = html;
+          if (this.state.walikelasClass && classes.includes(this.state.walikelasClass)) {
+            selectCls.value = this.state.walikelasClass;
+          }
+          selectCls.onchange = () => {
+            const chosen = selectCls.value;
+            if (chosen && inputWkName) {
+              const wkInfo = AttendanceRepository.getWaliKelasForClass(chosen);
+              inputWkName.value = (wkInfo && wkInfo.name) ? wkInfo.name : '';
+            }
+          };
+        }
+        if (inputWkName) {
+          if (this.state.walikelasClass) {
+            const wkInfo = AttendanceRepository.getWaliKelasForClass(this.state.walikelasClass);
+            inputWkName.value = (wkInfo && wkInfo.name) ? wkInfo.name : (this.state.walikelasName || '');
+          } else {
+            inputWkName.value = this.state.walikelasName || '';
+          }
+        }
+
+        // Bersihkan input password & pesan error
+        const adminPassEl = document.getElementById('login-admin-password');
+        const wkPassEl = document.getElementById('login-walikelas-password');
+        const adminErr = document.getElementById('login-admin-error');
+        const wkErr = document.getElementById('login-walikelas-error');
+        if (adminPassEl) adminPassEl.value = '';
+        if (wkPassEl) wkPassEl.value = '';
+        if (adminErr) adminErr.classList.add('hidden');
+        if (wkErr) wkErr.classList.add('hidden');
+
+        this.switchLoginTab(this.state.userRole === 'walikelas' ? 'walikelas' : 'admin');
+        screen.classList.remove('hidden');
+      },
+
+      hideLoginScreen() {
+        const screen = document.getElementById('login-screen');
+        if (screen) screen.classList.add('hidden');
+      },
+
+      switchLoginTab(tab) {
+        const tabAdmin = document.getElementById('login-tab-admin');
+        const tabWk = document.getElementById('login-tab-walikelas');
+        const formAdmin = document.getElementById('login-form-admin');
+        const formWk = document.getElementById('login-form-walikelas');
+
+        if (tab === 'walikelas') {
+          if (tabWk) tabWk.className = 'py-2 px-3 rounded-xl text-xs font-extrabold transition-all bg-blue-600 text-white shadow-xs cursor-pointer';
+          if (tabAdmin) tabAdmin.className = 'py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+          if (formAdmin) formAdmin.classList.add('hidden');
+          if (formWk) formWk.classList.remove('hidden');
+        } else {
+          if (tabAdmin) tabAdmin.className = 'py-2 px-3 rounded-xl text-xs font-extrabold transition-all bg-indigo-600 text-white shadow-xs cursor-pointer';
+          if (tabWk) tabWk.className = 'py-2 px-3 rounded-xl text-xs font-bold transition-all text-slate-600 hover:text-slate-900 cursor-pointer';
+          if (formWk) formWk.classList.add('hidden');
+          if (formAdmin) formAdmin.classList.remove('hidden');
+        }
+      },
+
+      submitLoginAdmin() {
+        const passEl = document.getElementById('login-admin-password');
+        const errEl = document.getElementById('login-admin-error');
+        const entered = passEl ? passEl.value.trim() : '';
+        const currentPin = this.state.adminPin || '123456';
+
+        if (entered !== currentPin) {
+          if (errEl) {
+            errEl.textContent = 'Password Admin salah! Silakan coba lagi.';
+            errEl.classList.remove('hidden');
+          }
+          if (passEl) passEl.focus();
+          return;
+        }
+
+        if (errEl) errEl.classList.add('hidden');
+        this.state.userRole = 'admin';
+        this.state.walikelasName = '';
+        this.state.walikelasClass = '';
+        AttendanceRepository.setAuthSession('admin', '', '');
+        sessionStorage.setItem('BK_APP_SESSION_AUTH_OK', '1');
+
+        this.applyRoleUI();
+        this.loadCurrentState();
+        this.hideLoginScreen();
+        this.showToast('Selamat datang! Masuk sebagai Guru BK (Admin).', 'success');
+      },
+
+      submitLoginWaliKelas() {
+        const selectCls = document.getElementById('login-walikelas-class');
+        const inputName = document.getElementById('login-walikelas-name');
+        const passEl = document.getElementById('login-walikelas-password');
+        const errEl = document.getElementById('login-walikelas-error');
+
+        const targetClass = selectCls ? selectCls.value : '';
+        const name = inputName ? inputName.value.trim() : '';
+        const entered = passEl ? passEl.value.trim() : '';
+
+        if (!AttendanceRepository.verifyWaliKelasPassword(targetClass, entered)) {
+          if (errEl) {
+            errEl.textContent = 'Password Wali Kelas salah! Hubungi Admin / Guru BK jika lupa.';
+            errEl.classList.remove('hidden');
+          }
+          if (passEl) passEl.focus();
+          return;
+        }
+
+        if (errEl) errEl.classList.add('hidden');
+        this.state.userRole = 'walikelas';
+        this.state.walikelasName = name;
+        this.state.walikelasClass = targetClass;
+        if (targetClass) {
+          this.state.currentClass = targetClass;
+          const mainSelect = document.getElementById('select-class');
+          if (mainSelect) mainSelect.value = targetClass;
+        }
+
+        AttendanceRepository.setAuthSession('walikelas', name, targetClass);
+        sessionStorage.setItem('BK_APP_SESSION_AUTH_OK', '1');
+
+        this.applyRoleUI();
+        this.loadCurrentState();
+        this.hideLoginScreen();
+        this.showToast(`Selamat datang! Masuk sebagai Wali Kelas${targetClass ? ' ' + targetClass : ''}.`, 'info');
+      },
+
+      logoutToLoginScreen() {
+        sessionStorage.removeItem('BK_APP_SESSION_AUTH_OK');
+        this.showLoginScreen();
+      },
+
+      // --- PASSWORD SETTINGS MODAL CONTROLLER (ADMIN ONLY) ---
+      openPasswordSettingsModal() {
+        if (this.state.userRole === 'walikelas') {
+          this.showToast('Akses Ditolak: Hanya Guru BK (Admin) yang dapat mengatur password.', 'warning');
+          return;
+        }
+        const modal = document.getElementById('modal-password-settings');
+        if (!modal) return;
+
+        const chkReq = document.getElementById('setting-require-login');
+        if (chkReq) chkReq.checked = AttendanceRepository.getRequireLogin();
+
+        const oldEl = document.getElementById('setting-admin-old-pass');
+        const newEl = document.getElementById('setting-admin-new-pass');
+        const confEl = document.getElementById('setting-admin-confirm-pass');
+        if (oldEl) oldEl.value = '';
+        if (newEl) newEl.value = '';
+        if (confEl) confEl.value = '';
+
+        const wkDefEl = document.getElementById('setting-wk-default-pass');
+        if (wkDefEl) {
+          wkDefEl.type = 'password';
+          wkDefEl.value = AttendanceRepository.getWaliKelasDefaultPassword();
+        }
+
+        this.renderWaliKelasPasswordTable();
+        modal.classList.remove('hidden');
+      },
+
+      closePasswordSettingsModal() {
+        const modal = document.getElementById('modal-password-settings');
+        if (modal) modal.classList.add('hidden');
+      },
+
+      renderWaliKelasPasswordTable() {
+        const tbody = document.getElementById('tbody-wk-passwords');
+        if (!tbody) return;
+        const classes = AttendanceRepository.getClasses();
+        const map = AttendanceRepository.getWaliKelasMap();
+
+        if (classes.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="py-4 px-3 text-center text-slate-400">Belum ada kelas terdaftar.</td></tr>';
+          return;
+        }
+
+        let html = '';
+        classes.forEach(cls => {
+          const info = map[cls] || {};
+          const displayCls = cls.toLowerCase().startsWith('kelas ') ? cls : `Kelas ${cls}`;
+          const wkName = info.name ? info.name : '<span class="text-slate-400 italic">Belum diatur</span>';
+          const customPass = info.password || '';
+          html += `
+            <tr class="hover:bg-blue-50/40">
+              <td class="py-2 px-3 font-bold text-slate-800">${displayCls}</td>
+              <td class="py-2 px-3 text-slate-700">${wkName}</td>
+              <td class="py-2 px-3">
+                <input type="text" data-wk-pass-class="${cls}" value="${customPass}" placeholder="Ikuti default" class="w-full text-xs font-mono bg-slate-50 focus:bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-cyan-500">
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html;
+      },
+
+      saveRequireLoginSetting() {
+        if (this.state.userRole === 'walikelas') return;
+        const chkReq = document.getElementById('setting-require-login');
+        const enabled = chkReq ? chkReq.checked : true;
+        AttendanceRepository.setRequireLogin(enabled);
+        this.state.requireLogin = enabled;
+        this.showToast(enabled ? 'Halaman login otomatis diaktifkan.' : 'Halaman login otomatis dinonaktifkan.', 'info');
+      },
+
+      saveAdminPasswordSetting() {
+        if (this.state.userRole === 'walikelas') return;
+        const oldEl = document.getElementById('setting-admin-old-pass');
+        const newEl = document.getElementById('setting-admin-new-pass');
+        const confEl = document.getElementById('setting-admin-confirm-pass');
+
+        const oldPass = oldEl ? oldEl.value.trim() : '';
+        const newPass = newEl ? newEl.value.trim() : '';
+        const confPass = confEl ? confEl.value.trim() : '';
+
+        if (oldPass !== (this.state.adminPin || '123456')) {
+          alert('Password Admin saat ini tidak cocok!');
+          if (oldEl) oldEl.focus();
+          return;
+        }
+        if (newPass.length < 4) {
+          alert('Password baru minimal harus 4 karakter.');
+          if (newEl) newEl.focus();
+          return;
+        }
+        if (newPass !== confPass) {
+          alert('Konfirmasi password baru tidak cocok!');
+          if (confEl) confEl.focus();
+          return;
+        }
+
+        AttendanceRepository.setAdminPin(newPass);
+        this.state.adminPin = newPass;
+        if (oldEl) oldEl.value = '';
+        if (newEl) newEl.value = '';
+        if (confEl) confEl.value = '';
+        this.showToast('Password Admin (Guru BK) berhasil diperbarui!', 'success');
+      },
+
+      saveWaliKelasDefaultPassword() {
+        if (this.state.userRole === 'walikelas') return;
+        const el = document.getElementById('setting-wk-default-pass');
+        const newPass = el ? el.value.trim() : '';
+        if (newPass.length < 4) {
+          alert('Password Default Wali Kelas minimal 4 karakter.');
+          if (el) el.focus();
+          return;
+        }
+        AttendanceRepository.setWaliKelasDefaultPassword(newPass);
+        this.state.walikelasPassword = newPass;
+        this.showToast('Password Default Wali Kelas berhasil disimpan!', 'success');
+      },
+
+      saveAllWaliKelasPasswords() {
+        if (this.state.userRole === 'walikelas') return;
+        const inputs = document.querySelectorAll('#tbody-wk-passwords input[data-wk-pass-class]');
+        const map = AttendanceRepository.getWaliKelasMap();
+
+        inputs.forEach(inp => {
+          const cls = inp.getAttribute('data-wk-pass-class');
+          const pass = inp.value.trim();
+          if (pass.length > 0 && pass.length < 4) {
+            return;
+          }
+          const existing = map[cls] || { name: '', nip: '', phone: '' };
+          if (existing.name || existing.nip || existing.phone || pass) {
+            map[cls] = {
+              name: existing.name || '',
+              nip: existing.nip || '',
+              phone: existing.phone || '',
+              password: pass
+            };
+          }
+        });
+
+        AttendanceRepository.saveWaliKelasMap(map);
+        this.showToast('Password khusus Wali Kelas per rombel berhasil disimpan!', 'success');
       },
 
       promptChangeAdminPin() {
@@ -7235,9 +7865,10 @@
           const name = (row.querySelector('input[data-field="name"]')?.value || '').trim();
           const nip = (row.querySelector('input[data-field="nip"]')?.value || '').trim();
           const phone = (row.querySelector('input[data-field="phone"]')?.value || '').trim();
+          const existingPass = (currentMap[className] && currentMap[className].password) ? currentMap[className].password : '';
 
-          if (name || nip || phone) {
-            currentMap[className] = { name, nip, phone };
+          if (name || nip || phone || existingPass) {
+            currentMap[className] = { name, nip, phone, password: existingPass };
           } else {
             delete currentMap[className];
           }

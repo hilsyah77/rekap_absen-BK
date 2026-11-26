@@ -3979,23 +3979,71 @@
         this.syncToDesktop();
       }
 
+      static sortClasses(classes) {
+        if (!Array.isArray(classes)) return [];
+        const ROMAN_MAP = {
+          I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6,
+          VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12
+        };
+        const parseKey = (rawName) => {
+          const raw = String(rawName || '').trim();
+          const cleaned = raw.replace(/^kelas\s+/i, '').trim();
+
+          // 1. Cek angka Arab di awal (mis. 7A, 7-B, 8 C, 10-1, 12 IPA 1)
+          const numMatch = cleaned.match(/^(\d{1,2})(?:[\s\-_./]+(.*)|([A-Za-z].*)|$)/);
+          if (numMatch) {
+            const grade = parseInt(numMatch[1], 10);
+            const rest = (numMatch[2] || numMatch[3] || '').replace(/^[\s\-_./]+/, '').trim();
+            return { grade, rest, raw };
+          }
+
+          // 2. Cek angka Romawi multi-karakter di awal (XII, XI, IX, VIII, VII, VI, IV, III, II)
+          const multiRoman = cleaned.match(/^(XII|XI|IX|VIII|VII|VI|IV|III|II)(?:[\s\-_./]+(.*)|([A-Za-z0-9].*)|$)/i);
+          if (multiRoman) {
+            const grade = ROMAN_MAP[multiRoman[1].toUpperCase()] || 999;
+            const rest = (multiRoman[2] || multiRoman[3] || '').replace(/^[\s\-_./]+/, '').trim();
+            return { grade, rest, raw };
+          }
+
+          // 3. Cek angka Romawi 1 huruf (X, V, I) dengan pemisah / angka / 1 huruf rombel (agar "IPA" tidak terbaca "I")
+          const singleRoman = cleaned.match(/^(X|V|I)(?:[\s\-_./]+(.*)|(\d.*)|([A-Za-z])?$)/i);
+          if (singleRoman) {
+            const grade = ROMAN_MAP[singleRoman[1].toUpperCase()] || 999;
+            const rest = (singleRoman[2] || singleRoman[3] || singleRoman[4] || '').replace(/^[\s\-_./]+/, '').trim();
+            return { grade, rest, raw };
+          }
+
+          return { grade: 999, rest: cleaned, raw };
+        };
+
+        return [...classes].sort((a, b) => {
+          const ka = parseKey(a);
+          const kb = parseKey(b);
+          if (ka.grade !== kb.grade) return ka.grade - kb.grade;
+          const restCmp = ka.rest.localeCompare(kb.rest, 'id', { numeric: true, sensitivity: 'base' });
+          if (restCmp !== 0) return restCmp;
+          return ka.raw.localeCompare(kb.raw, 'id', { numeric: true, sensitivity: 'base' });
+        });
+      }
+
       static getClasses() {
         try {
           const raw = localStorage.getItem(STORAGE_KEYS.CLASSES);
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) return parsed;
+            if (Array.isArray(parsed)) return this.sortClasses(parsed);
           }
         } catch (e) {}
 
         const students = this.getAllStudents();
         const studentClasses = [...new Set(students.map(s => s.class).filter(Boolean))];
-        if (studentClasses.length > 0) return studentClasses;
-        return DEFAULT_CLASSES;
+        if (studentClasses.length > 0) return this.sortClasses(studentClasses);
+        return this.sortClasses(DEFAULT_CLASSES);
       }
 
       static saveClasses(classes) {
-        localStorage.setItem(STORAGE_KEYS.CLASSES, JSON.stringify(classes));
+        const sorted = this.sortClasses(classes);
+        localStorage.setItem(STORAGE_KEYS.CLASSES, JSON.stringify(sorted));
         this.syncToDesktop();
       }
 
